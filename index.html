@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Karaoke Timer</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link type="text/css" href="styles.css?ver=20170501" rel="stylesheet" />
+</head>
+
+<body>
+
+  <div id="ktimer-timings" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Timing</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-check form-check-inline">
+            <div class="form-check">
+              Output format:
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="ktimer-timings-output-new" name="ktimer-timings-output" value="new">
+              <label class="form-check-label" for="ktimer-timings-output-new">New</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="ktimer-timings-output-full" name="ktimer-timings-output" value="full">
+              <label class="form-check-label" for="ktimer-timings-output-full">Full</label>
+            </div>
+          </div>
+          <button id="ktimer-timings-copy-button" type="button" class="btn btn-info float-right" aria-label="copy">Copy</button>
+          <br>
+          <br>
+          <pre id="ktimer-timings-text"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ktimer-warning" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Warning</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="ktimer-warning-text"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ktimer-controls" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Controls</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h2>Audio controls</h2>
+          <ul>
+            <li><button id="control-audio-toggle" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-audio-toggle">loading...</button> - toggle play/pause</li>
+            <li><button id="control-audio-left" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-audio-left">loading...</button> - rewind 2s</li>
+            <li><button id="control-audio-right" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-audio-right">loading...</button> - skip 2s</li>
+          </ul>
+          <h2>Timer controls</h2>
+          <ul>
+            <li><button id="control-time-tap1" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-time-tap1">loading...</button> - time syllable</li>
+            <li><button id="control-time-tap2" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-time-tap2">loading...</button> - time syllable (extra)</li>
+            <li><button id="control-time-end" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-time-end">loading...</button> - end line without starting next (must be during last syllable of a line)</li>
+            <li><button id="control-time-back" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-time-back">loading...</button> - delete last timed line</li>
+            <li><button id="control-time-del" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-time-del">loading...</button> - delete the line with an active syllable</li>
+            <li><button id="control-time-undel" type="button" class="btn btn-outline-primary btn-sm" aria-label="control-time-undel">loading...</button> - undelete the last deleted complete line. A deleted partially timed line cannot be undeleted, and timing any new syllables will cause the undelete stack to be erased</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ktimer-lyrics" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Lyrics</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <button id="ktimer-lyrics-syllablize-button" type="button" class="btn btn-primary" aria-label="syllablize">Syllablize</button>
+          <div class="btn-group" role="group" aria-label="syllablize-group">
+            <button id="ktimer-lyrics-undo-button" type="button" class="btn btn-info" aria-label="undo">Undo</button>
+            <button id="ktimer-lyrics-redo-button" type="button" class="btn btn-info" aria-label="redo">Redo</button>
+          </div>
+          <div class="form-check form-check-inline">
+            <div class="form-check">
+              Syllablize level:
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="ktimer-syllablize-level-1" name="ktimer-syllablize-level" value="1">
+              <label class="form-check-label" for="ktimer-syllablize-level-1">Basic</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" id="ktimer-syllablize-level-2" name="ktimer-syllablize-level" value="2">
+              <label class="form-check-label" for="ktimer-syllablize-level-2">Full</label>
+            </div>
+          </div>
+          <button id="ktimer-lyrics-copy-button" type="button" class="btn btn-info float-right" aria-label="copy">Copy</button>
+          <br>
+          <br>
+          <div class="form-group">
+            <textarea class="form-control text-monospace" spellcheck="false" id="ktimer-lyrics-textarea" rows="8"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="ktimer-lyrics-apply-button" type="button" class="btn btn-primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="player-area">
+      <audio id="audio-player" controls ></audio>
+    </div>
+
+
+    <div class="config-area form-group">
+      <div class="custom-file file-input-container">
+        <input type="file" class="custom-file-input" id="audio-input">
+        <label class="custom-file-label" id="audio-input-label" for="audio-input">Audio</label>
+      </div>
+    </div>
+    <div class="config-area">
+      <button id="lyrics-button" type="button" class="btn btn-primary">Input Lyrics</button>
+      <button id="controls-button" type="button" class="btn btn-info">Controls</button>
+      <button id="timing-button" type="button" class="btn btn-primary">Output Timing</button>
+    </div>
+    <div class="config-area">
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" id="config-sfx">
+        <label class="form-check-label" for="config-sfx">SFX</label>
+      </div>
+    </div>
+
+    <div id="lyrics"></div>
+
+  </div>
+
+  <template id="lyric-template">
+    <div class="lyric"></div>
+  </template>
+  <template id="unmapped-template">
+    <div class="unmapped"></div>
+  </template>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script src="karaoke-timer.js?ver=20180910"></script>
+  <script>
+    $(document).ready(function() {
+      initializePlay();
+    });
+  </script>
+</body>
+</html>
